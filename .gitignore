@@ -74,3 +74,6 @@ Thumbs.db
 __pycache__/
 *.py[cod]
 *$py.class
+
+# Binary course files (encrypted data)
+data/course.bin
