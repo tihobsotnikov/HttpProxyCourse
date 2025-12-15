@@ -203,3 +203,76 @@ QSqlQuery DatabaseManager::executeSelectQuery(const QString& query)
     }
     return sqlQuery;
 }
+
+bool DatabaseManager::registerUser(const QString& login, const QString& passwordHash, const QString& role)
+{
+    if (!isConnected()) {
+        m_lastError = "Database not connected";
+        return false;
+    }
+
+    QSqlQuery query(m_database);
+    query.prepare("INSERT INTO users (login, password_hash, role) VALUES (?, ?, ?)");
+    query.addBindValue(login);
+    query.addBindValue(passwordHash);
+    query.addBindValue(role);
+
+    if (!query.exec()) {
+        m_lastError = QString("Failed to register user: %1").arg(query.lastError().text());
+        qDebug() << m_lastError;
+        return false;
+    }
+
+    qDebug() << "User registered successfully:" << login << "with role:" << role;
+    return true;
+}
+
+QString DatabaseManager::authenticateUser(const QString& login, const QString& passwordHash)
+{
+    if (!isConnected()) {
+        m_lastError = "Database not connected";
+        return QString();
+    }
+
+    QSqlQuery query(m_database);
+    query.prepare("SELECT role FROM users WHERE login = ? AND password_hash = ?");
+    query.addBindValue(login);
+    query.addBindValue(passwordHash);
+
+    if (!query.exec()) {
+        m_lastError = QString("Authentication query failed: %1").arg(query.lastError().text());
+        qDebug() << m_lastError;
+        return QString();
+    }
+
+    if (query.next()) {
+        QString role = query.value(0).toString();
+        qDebug() << "User authenticated successfully:" << login << "with role:" << role;
+        return role;
+    }
+
+    qDebug() << "Authentication failed for user:" << login;
+    return QString();
+}
+
+QSqlTableModel* DatabaseManager::getUsersModel()
+{
+    if (!isConnected()) {
+        m_lastError = "Database not connected";
+        return nullptr;
+    }
+
+    QSqlTableModel* model = new QSqlTableModel(nullptr, m_database);
+    model->setTable("users");
+    model->setEditStrategy(QSqlTableModel::OnManualSubmit);
+    
+    // Set column headers
+    model->setHeaderData(0, Qt::Horizontal, "ID");
+    model->setHeaderData(1, Qt::Horizontal, "Login");
+    model->setHeaderData(2, Qt::Horizontal, "Password Hash");
+    model->setHeaderData(3, Qt::Horizontal, "Role");
+    model->setHeaderData(4, Qt::Horizontal, "Created At");
+    
+    model->select();
+    return model;
+}

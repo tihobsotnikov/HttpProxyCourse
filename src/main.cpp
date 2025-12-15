@@ -1,130 +1,101 @@
-#include <QCoreApplication>
+#include <QApplication>
 #include <QDebug>
 #include <QFile>
 #include <QDir>
+#include <QMessageBox>
 
 #include "core/CourseManager.h"
 #include "core/CryptoUtils.h"
+#include "db/DatabaseManager.h"
+#include "ui/LoginDialog.h"
+#include "ui/AdminWindow.h"
 
 int main(int argc, char *argv[])
 {
-    QCoreApplication app(argc, argv);
+    QApplication app(argc, argv);
 
-    qDebug() << "=== HTTP Proxy Learning System - Business Logic Test ===";
+    qDebug() << "=== HTTP Proxy Learning System - GUI Application ===";
     
     const QString ENCRYPTION_KEY = "SECRET_KEY_123";
     const QString JSON_PATH = "data/course_source.json";
     const QString BINARY_PATH = "data/course.bin";
     
-    // 1. Check if binary file exists
-    qDebug() << "\n1. Checking for existing binary course file...";
+    // 1. Initialize database
+    qDebug() << "\n1. Initializing database connection...";
+    DatabaseManager& db = DatabaseManager::getInstance();
+    
+    if (!db.connectToDatabase()) {
+        QMessageBox::critical(nullptr, "Ошибка базы данных", 
+                            QString("Не удалось подключиться к базе данных:\n%1\n\nПроверьте настройки PostgreSQL.").arg(db.getLastError()));
+        return 1;
+    }
+    
+    if (!db.initDatabase()) {
+        QMessageBox::critical(nullptr, "Ошибка инициализации", 
+                            QString("Не удалось инициализировать базу данных:\n%1").arg(db.getLastError()));
+        return 1;
+    }
+    
+    qDebug() << "✅ Database initialized successfully";
+    
+    // 2. Ensure course binary file exists
+    qDebug() << "\n2. Checking course data...";
     QFile binaryFile(BINARY_PATH);
     
     if (!binaryFile.exists()) {
         qDebug() << "❌ Binary file not found:" << BINARY_PATH;
         
-        // 2. Look for JSON source file
-        qDebug() << "\n2. Looking for JSON source file...";
         QFile jsonFile(JSON_PATH);
-        
         if (!jsonFile.exists()) {
-            qDebug() << "❌ JSON source file not found:" << JSON_PATH;
-            qDebug() << "Please ensure the JSON source file exists.";
+            QMessageBox::critical(nullptr, "Ошибка данных курса", 
+                                QString("Не найден файл данных курса:\n%1\n\nПожалуйста, убедитесь, что файл существует.").arg(JSON_PATH));
             return 1;
         }
         
-        qDebug() << "✅ JSON source file found:" << JSON_PATH;
-        
-        // 3. Load course from JSON
-        qDebug() << "\n3. Loading course from JSON...";
+        qDebug() << "✅ JSON source file found, converting to binary...";
         Course course = CourseManager::loadCourseFromJSON(JSON_PATH);
         
         if (course.chapters.isEmpty()) {
-            qDebug() << "❌ Failed to load course from JSON or course is empty";
+            QMessageBox::critical(nullptr, "Ошибка загрузки курса", "Не удалось загрузить данные курса из JSON файла.");
             return 1;
         }
         
-        qDebug() << "✅ Course loaded successfully from JSON";
-        qDebug() << "   Chapters loaded:" << course.chapters.size();
-        
-        // Display course info
-        for (int i = 0; i < course.chapters.size(); ++i) {
-            const Chapter& chapter = course.chapters[i];
-            qDebug() << "   Chapter" << (i+1) << ":" << chapter.title;
-            qDebug() << "     Questions:" << chapter.questions.size();
-        }
-        
-        // 4. Encrypt and save to binary
-        qDebug() << "\n4. Encrypting and saving to binary format...";
         if (!CourseManager::saveCourseToBinary(course, BINARY_PATH, ENCRYPTION_KEY)) {
-            qDebug() << "❌ Failed to save course to binary format";
+            QMessageBox::critical(nullptr, "Ошибка сохранения", "Не удалось сохранить курс в бинарный формат.");
             return 1;
         }
         
-        qDebug() << "✅ Course converted and encrypted";
-        qDebug() << "   Binary file saved to:" << BINARY_PATH;
-        
-        // Display file size
-        QFile savedFile(BINARY_PATH);
-        if (savedFile.exists()) {
-            qDebug() << "   File size:" << savedFile.size() << "bytes";
-        }
+        qDebug() << "✅ Course converted and saved to binary format";
     } else {
-        qDebug() << "✅ Binary course file already exists:" << BINARY_PATH;
+        qDebug() << "✅ Binary course file exists";
     }
     
-    // 5. Load and decrypt binary file
-    qDebug() << "\n5. Loading and decrypting binary course file...";
-    Course loadedCourse = CourseManager::loadCourseFromBinary(BINARY_PATH, ENCRYPTION_KEY);
+    // 3. Show login dialog
+    qDebug() << "\n3. Starting authentication...";
+    LoginDialog loginDialog;
     
-    if (loadedCourse.chapters.isEmpty()) {
-        qDebug() << "❌ Failed to load course from binary file";
+    if (loginDialog.exec() != QDialog::Accepted) {
+        qDebug() << "User cancelled login";
+        return 0;
+    }
+    
+    QString userRole = loginDialog.getRole();
+    qDebug() << "✅ User authenticated with role:" << userRole;
+    
+    // 4. Launch appropriate interface based on role
+    if (userRole == "admin") {
+        qDebug() << "Launching admin interface...";
+        AdminWindow adminWindow;
+        adminWindow.show();
+        return app.exec();
+    } else if (userRole == "student") {
+        qDebug() << "Student interface not yet implemented";
+        QMessageBox::information(nullptr, "Студентский интерфейс", 
+                               "Добро пожаловать, студент!\n\nСтудентский интерфейс будет реализован в следующей сессии.\nПока что доступна только панель администратора.");
+        return 0;
+    } else {
+        QMessageBox::warning(nullptr, "Неизвестная роль", 
+                           QString("Неизвестная роль пользователя: %1").arg(userRole));
         return 1;
     }
-    
-    qDebug() << "✅ Course loaded and decrypted successfully";
-    qDebug() << "   Chapters loaded:" << loadedCourse.chapters.size();
-    
-    // Display detailed course information
-    qDebug() << "\n6. Course content verification:";
-    for (int i = 0; i < loadedCourse.chapters.size(); ++i) {
-        const Chapter& chapter = loadedCourse.chapters[i];
-        qDebug() << "\n   📖 Chapter" << (i+1) << "(ID:" << chapter.id << "):" << chapter.title;
-        qDebug() << "      Content length:" << chapter.content.length() << "characters";
-        qDebug() << "      Questions:" << chapter.questions.size();
-        
-        for (int j = 0; j < chapter.questions.size(); ++j) {
-            const Question& question = chapter.questions[j];
-            qDebug() << "        ❓ Question" << (j+1) << ":" << question.q_text.left(50) + "...";
-            qDebug() << "           Options:" << question.options.size() << ", Correct:" << question.correct_index;
-        }
-    }
-    
-    // 7. Test crypto functions
-    qDebug() << "\n7. Testing cryptographic functions...";
-    QString testPassword = "test_password_123";
-    QString hashedPassword = CryptoUtils::hashPassword(testPassword);
-    qDebug() << "   Original password:" << testPassword;
-    qDebug() << "   SHA-256 hash:" << hashedPassword;
-    
-    // Test XOR encryption/decryption
-    QByteArray testData = "This is a test message for XOR encryption";
-    QString testKey = "test_key";
-    QByteArray encrypted = CryptoUtils::xorEncryptDecrypt(testData, testKey);
-    QByteArray decrypted = CryptoUtils::xorEncryptDecrypt(encrypted, testKey);
-    
-    qDebug() << "   XOR test - Original:" << testData;
-    qDebug() << "   XOR test - Encrypted size:" << encrypted.size() << "bytes";
-    qDebug() << "   XOR test - Decrypted:" << decrypted;
-    qDebug() << "   XOR test - Match:" << (testData == decrypted ? "✅ YES" : "❌ NO");
-    
-    qDebug() << "\n=== Business Logic Test Completed Successfully! ===";
-    qDebug() << "All components are working correctly:";
-    qDebug() << "  ✅ JSON parsing and course loading";
-    qDebug() << "  ✅ Binary serialization with QDataStream";
-    qDebug() << "  ✅ XOR encryption/decryption";
-    qDebug() << "  ✅ SHA-256 password hashing";
-    qDebug() << "  ✅ File format validation with Magic Number";
-
-    return 0;
 }
