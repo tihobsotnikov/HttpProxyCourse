@@ -17,27 +17,84 @@
 #include "../core/CourseManager.h"
 #include "../db/DatabaseManager.h"
 
+/**
+ * @brief Главное окно студента.
+ * Предоставляет интерфейс для изучения теоретического материала
+ * и прохождения тестов по главам курса.
+ */
 class StudentWindow : public QMainWindow
 {
     Q_OBJECT
 
 public:
+    /**
+     * @brief Конструктор окна студента.
+     * @param userId ID студента в базе данных
+     * @param parent Родительский виджет
+     */
     explicit StudentWindow(int userId, QWidget *parent = nullptr);
+    
+    /**
+     * @brief Деструктор окна студента.
+     */
     ~StudentWindow();
 
 private slots:
+    /**
+     * @brief Обработчик нажатия кнопки начала тестирования.
+     */
     void onTakeTestClicked();
+    
+    /**
+     * @brief Обработчик выбора ответа на вопрос.
+     */
     void onAnswerClicked();
 
 private:
+    /**
+     * @brief Настраивает пользовательский интерфейс.
+     */
     void setupUI();
+    
+    /**
+     * @brief Загружает данные курса из файла.
+     */
     void loadCourse();
+    
+    /**
+     * @brief Инициализирует прогресс студента.
+     */
     void initializeProgress();
+    
+    /**
+     * @brief Показывает страницу с теоретическим материалом.
+     */
     void showTheoryPage();
+    
+    /**
+     * @brief Показывает страницу с тестом.
+     */
     void showTestPage();
+    
+    /**
+     * @brief Загружает текущий вопрос теста.
+     */
     void loadCurrentQuestion();
+    
+    /**
+     * @brief Обрабатывает ответ студента.
+     * @param isCorrect true если ответ правильный, false в противном случае
+     */
     void processAnswer(bool isCorrect);
+    
+    /**
+     * @brief Возвращает к изучению теории.
+     */
     void resetToTheory();
+    
+    /**
+     * @brief Переходит к следующей главе курса.
+     */
     void moveToNextChapter();
     
     // UI Components

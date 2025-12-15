@@ -6,6 +6,10 @@
 #include <QList>
 #include <QDataStream>
 
+/**
+ * @brief Структура для представления вопроса теста.
+ * Содержит текст вопроса, варианты ответов и индекс правильного ответа.
+ */
 struct Question {
     QString q_text;
     QStringList options;
@@ -13,6 +17,12 @@ struct Question {
 
     Question() : correct_index(0) {}
     
+    /**
+     * @brief Конструктор вопроса.
+     * @param text Текст вопроса
+     * @param opts Список вариантов ответов
+     * @param correctIdx Индекс правильного ответа
+     */
     Question(const QString& text, const QStringList& opts, int correctIdx)
         : q_text(text), options(opts), correct_index(correctIdx) {}
 
@@ -27,6 +37,10 @@ struct Question {
     }
 };
 
+/**
+ * @brief Структура для представления главы курса.
+ * Содержит идентификатор, заголовок, содержание и список вопросов для тестирования.
+ */
 struct Chapter {
     int id;
     QString title;
@@ -35,6 +49,12 @@ struct Chapter {
 
     Chapter() : id(0) {}
     
+    /**
+     * @brief Конструктор главы.
+     * @param chapterId Идентификатор главы
+     * @param chapterTitle Заголовок главы
+     * @param chapterContent Содержание главы
+     */
     Chapter(int chapterId, const QString& chapterTitle, const QString& chapterContent)
         : id(chapterId), title(chapterTitle), content(chapterContent) {}
 
@@ -49,6 +69,10 @@ struct Chapter {
     }
 };
 
+/**
+ * @brief Структура для представления курса.
+ * Содержит список глав курса.
+ */
 struct Course {
     QList<Chapter> chapters;
 

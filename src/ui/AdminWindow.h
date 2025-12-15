@@ -23,24 +23,68 @@
 
 #include "models/Structures.h"
 
+/**
+ * @brief Главное окно администратора.
+ * Предоставляет интерфейс для управления студентами и редактирования курса.
+ * Содержит две вкладки: просмотр студентов и редактор курса.
+ */
 class AdminWindow : public QMainWindow
 {
     Q_OBJECT
 
 public:
+    /**
+     * @brief Конструктор окна администратора.
+     * @param parent Родительский виджет
+     */
     explicit AdminWindow(QWidget *parent = nullptr);
 
 private slots:
+    /**
+     * @brief Обработчик изменения текста поиска студентов.
+     * @param text Новый текст для поиска
+     */
     void onSearchTextChanged(const QString& text);
+    
+    /**
+     * @brief Обработчик нажатия кнопки генерации отчета.
+     */
     void onGenerateReportClicked();
+    
+    /**
+     * @brief Обработчик изменения выбранной главы в редакторе.
+     */
     void onChapterSelectionChanged();
+    
+    /**
+     * @brief Обработчик сохранения изменений в курсе.
+     */
     void onSaveChangesClicked();
 
 private:
+    /**
+     * @brief Настраивает пользовательский интерфейс.
+     */
     void setupUI();
+    
+    /**
+     * @brief Настраивает вкладку со студентами.
+     */
     void setupStudentsTab();
+    
+    /**
+     * @brief Настраивает вкладку редактора курса.
+     */
     void setupCourseEditorTab();
+    
+    /**
+     * @brief Загружает данные курса из файла.
+     */
     void loadCourseData();
+    
+    /**
+     * @brief Обновляет содержимое выбранной главы.
+     */
     void updateChapterContent();
     
     // Main widgets
