@@ -9,10 +9,15 @@ DESTDIR = bin
 
 SOURCES += \
     src/main.cpp \
-    src/db/DatabaseManager.cpp
+    src/db/DatabaseManager.cpp \
+    src/core/CryptoUtils.cpp \
+    src/core/CourseManager.cpp
 
 HEADERS += \
-    src/db/DatabaseManager.h
+    src/db/DatabaseManager.h \
+    src/models/Structures.h \
+    src/core/CryptoUtils.h \
+    src/core/CourseManager.h
 
 # Include paths
 INCLUDEPATH += src
