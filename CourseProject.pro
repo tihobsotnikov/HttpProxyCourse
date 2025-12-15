@@ -13,7 +13,8 @@ SOURCES += \
     src/core/CryptoUtils.cpp \
     src/core/CourseManager.cpp \
     src/ui/LoginDialog.cpp \
-    src/ui/AdminWindow.cpp
+    src/ui/AdminWindow.cpp \
+    src/ui/StudentWindow.cpp
 
 HEADERS += \
     src/db/DatabaseManager.h \
@@ -21,7 +22,8 @@ HEADERS += \
     src/core/CryptoUtils.h \
     src/core/CourseManager.h \
     src/ui/LoginDialog.h \
-    src/ui/AdminWindow.h
+    src/ui/AdminWindow.h \
+    src/ui/StudentWindow.h
 
 # Include paths
 INCLUDEPATH += src

@@ -12,6 +12,7 @@
 #include <QFile>
 #include <QTextStream>
 #include <QCoreApplication>
+#include <QPair>
 
 class DatabaseManager : public QObject
 {
@@ -33,7 +34,12 @@ public:
     // User authentication methods
     bool registerUser(const QString& login, const QString& passwordHash, const QString& role = "student");
     QString authenticateUser(const QString& login, const QString& passwordHash);
+    QPair<QString, int> authenticateUserWithId(const QString& login, const QString& passwordHash);
     QSqlTableModel* getUsersModel();
+    
+    // Student progress methods
+    void saveProgress(int userId, int chapterId, int score, const QString &status);
+    QPair<int, QString> getLastProgress(int userId);
     
     // Prevent copying
     DatabaseManager(const DatabaseManager&) = delete;

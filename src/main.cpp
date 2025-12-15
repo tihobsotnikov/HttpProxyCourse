@@ -9,6 +9,7 @@
 #include "db/DatabaseManager.h"
 #include "ui/LoginDialog.h"
 #include "ui/AdminWindow.h"
+#include "ui/StudentWindow.h"
 
 int main(int argc, char *argv[])
 {
@@ -80,7 +81,8 @@ int main(int argc, char *argv[])
     }
     
     QString userRole = loginDialog.getRole();
-    qDebug() << "✅ User authenticated with role:" << userRole;
+    int userId = loginDialog.getUserId();
+    qDebug() << "✅ User authenticated with role:" << userRole << "and ID:" << userId;
     
     // 4. Launch appropriate interface based on role
     if (userRole == "admin") {
@@ -89,10 +91,10 @@ int main(int argc, char *argv[])
         adminWindow.show();
         return app.exec();
     } else if (userRole == "student") {
-        qDebug() << "Student interface not yet implemented";
-        QMessageBox::information(nullptr, "Студентский интерфейс", 
-                               "Добро пожаловать, студент!\n\nСтудентский интерфейс будет реализован в следующей сессии.\nПока что доступна только панель администратора.");
-        return 0;
+        qDebug() << "Launching student interface...";
+        StudentWindow studentWindow(userId);
+        studentWindow.show();
+        return app.exec();
     } else {
         QMessageBox::warning(nullptr, "Неизвестная роль", 
                            QString("Неизвестная роль пользователя: %1").arg(userRole));

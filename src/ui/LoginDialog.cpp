@@ -3,7 +3,7 @@
 #include "core/CryptoUtils.h"
 
 LoginDialog::LoginDialog(QWidget *parent)
-    : QDialog(parent)
+    : QDialog(parent), m_userId(-1)
 {
     setWindowTitle("Авторизация - HTTP Proxy Course");
     setFixedSize(350, 200);
@@ -65,6 +65,11 @@ QString LoginDialog::getRole() const
     return m_userRole;
 }
 
+int LoginDialog::getUserId() const
+{
+    return m_userId;
+}
+
 void LoginDialog::onLoginClicked()
 {
     QString login = m_loginEdit->text().trimmed();
@@ -80,9 +85,9 @@ void LoginDialog::onLoginClicked()
     
     // Authenticate user
     DatabaseManager& db = DatabaseManager::getInstance();
-    QString role = db.authenticateUser(login, passwordHash);
+    QPair<QString, int> authResult = db.authenticateUserWithId(login, passwordHash);
     
-    if (role.isEmpty()) {
+    if (authResult.first.isEmpty() || authResult.second == -1) {
         QMessageBox::warning(this, "Ошибка авторизации", 
                            "Неверный логин или пароль.\nПроверьте введенные данные и попробуйте снова.");
         m_passwordEdit->clear();
@@ -90,7 +95,8 @@ void LoginDialog::onLoginClicked()
         return;
     }
     
-    m_userRole = role;
+    m_userRole = authResult.first;
+    m_userId = authResult.second;
     accept();
 }
 

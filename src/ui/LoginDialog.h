@@ -19,6 +19,7 @@ public:
     explicit LoginDialog(QWidget *parent = nullptr);
     
     QString getRole() const;
+    int getUserId() const;
 
 private slots:
     void onLoginClicked();
@@ -33,6 +34,7 @@ private:
     QPushButton* m_registerButton;
     
     QString m_userRole;
+    int m_userId;
 };
 
 #endif // LOGINDIALOG_H
