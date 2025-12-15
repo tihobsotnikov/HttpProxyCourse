@@ -1,33 +1,28 @@
 #include "db/DatabaseManager.h"
 
-// Database connection constants
 const QString DatabaseManager::DB_HOSTNAME = "localhost";
 const QString DatabaseManager::DB_NAME = "course_db";
 const QString DatabaseManager::DB_USERNAME = "postgres";
 const QString DatabaseManager::DB_PASSWORD = "";
 const int DatabaseManager::DB_PORT = 5432;
 
-DatabaseManager::DatabaseManager(QObject *parent)
-    : QObject(parent), m_connected(false)
-{
+DatabaseManager::DatabaseManager(QObject* parent)
+    : QObject(parent), m_connected(false) {
     m_database = QSqlDatabase::addDatabase("QPSQL");
 }
 
-DatabaseManager::~DatabaseManager()
-{
+DatabaseManager::~DatabaseManager() {
     if (m_database.isOpen()) {
         m_database.close();
     }
 }
 
-DatabaseManager& DatabaseManager::getInstance()
-{
+DatabaseManager& DatabaseManager::getInstance() {
     static DatabaseManager instance;
     return instance;
 }
 
-bool DatabaseManager::connectToDatabase()
-{
+bool DatabaseManager::connectToDatabase() {
     if (m_connected && m_database.isOpen()) {
         return true;
     }
@@ -51,35 +46,33 @@ bool DatabaseManager::connectToDatabase()
     return true;
 }
 
-bool DatabaseManager::initDatabase()
-{
+bool DatabaseManager::initDatabase() {
     if (!isConnected()) {
         m_lastError = "Database not connected";
         return false;
     }
 
-    // Try to load schema from file first
+    // Попытка загрузки схемы из файла
     if (loadSchemaFromFile()) {
         qDebug() << "Database schema loaded from file successfully";
         return true;
     }
 
-    // Fallback to hardcoded schema
+    // Резервный вариант с жестко заданной схемой
     qDebug() << "Loading schema from file failed, using hardcoded schema";
     return createTables();
 }
 
-bool DatabaseManager::loadSchemaFromFile()
-{
+bool DatabaseManager::loadSchemaFromFile() {
     QString schemaPath = QCoreApplication::applicationDirPath() + "/../data/schema.sql";
     QFile schemaFile(schemaPath);
-    
+
     if (!schemaFile.exists()) {
-        // Try alternative path
+        // Попытка альтернативного пути
         schemaPath = "data/schema.sql";
         schemaFile.setFileName(schemaPath);
     }
-    
+
     if (!schemaFile.open(QIODevice::ReadOnly | QIODevice::Text)) {
         m_lastError = QString("Cannot open schema file: %1").arg(schemaPath);
         qDebug() << m_lastError;
@@ -90,9 +83,9 @@ bool DatabaseManager::loadSchemaFromFile()
     QString schemaContent = in.readAll();
     schemaFile.close();
 
-    // Split by semicolon and execute each statement
+    // Разделение по точке с запятой и выполнение каждого оператора
     QStringList statements = schemaContent.split(';', Qt::SkipEmptyParts);
-    
+
     for (const QString& statement : statements) {
         QString trimmedStatement = statement.trimmed();
         if (trimmedStatement.isEmpty() || trimmedStatement.startsWith("--")) {
@@ -111,11 +104,10 @@ bool DatabaseManager::loadSchemaFromFile()
     return true;
 }
 
-bool DatabaseManager::createTables()
-{
+bool DatabaseManager::createTables() {
     QSqlQuery query(m_database);
 
-    // Create users table
+    // Создание таблицы пользователей
     QString createUsersTable = R"(
         CREATE TABLE IF NOT EXISTS users (
             id SERIAL PRIMARY KEY,
@@ -132,7 +124,7 @@ bool DatabaseManager::createTables()
         return false;
     }
 
-    // Create study_progress table
+    // Создание таблицы прогресса обучения
     QString createProgressTable = R"(
         CREATE TABLE IF NOT EXISTS study_progress (
             user_id INTEGER NOT NULL,
@@ -151,7 +143,7 @@ bool DatabaseManager::createTables()
         return false;
     }
 
-    // Create indexes
+    // Создание индексов для оптимизации запросов
     query.exec("CREATE INDEX IF NOT EXISTS idx_users_login ON users(login)");
     query.exec("CREATE INDEX IF NOT EXISTS idx_study_progress_user_id ON study_progress(user_id)");
     query.exec("CREATE INDEX IF NOT EXISTS idx_study_progress_chapter_id ON study_progress(chapter_id)");
@@ -160,13 +152,11 @@ bool DatabaseManager::createTables()
     return true;
 }
 
-bool DatabaseManager::isConnected() const
-{
+bool DatabaseManager::isConnected() const {
     return m_connected && m_database.isOpen();
 }
 
-QStringList DatabaseManager::getTableList() const
-{
+QStringList DatabaseManager::getTableList() const {
     if (!isConnected()) {
         return QStringList();
     }
@@ -174,13 +164,11 @@ QStringList DatabaseManager::getTableList() const
     return m_database.tables();
 }
 
-QString DatabaseManager::getLastError() const
-{
+QString DatabaseManager::getLastError() const {
     return m_lastError;
 }
 
-bool DatabaseManager::executeQuery(const QString& query)
-{
+bool DatabaseManager::executeQuery(const QString& query) {
     if (!isConnected()) {
         m_lastError = "Database not connected";
         return false;
@@ -195,8 +183,7 @@ bool DatabaseManager::executeQuery(const QString& query)
     return true;
 }
 
-QSqlQuery DatabaseManager::executeSelectQuery(const QString& query)
-{
+QSqlQuery DatabaseManager::executeSelectQuery(const QString& query) {
     QSqlQuery sqlQuery(m_database);
     if (isConnected()) {
         sqlQuery.exec(query);
@@ -204,8 +191,7 @@ QSqlQuery DatabaseManager::executeSelectQuery(const QString& query)
     return sqlQuery;
 }
 
-bool DatabaseManager::registerUser(const QString& login, const QString& passwordHash, const QString& role)
-{
+bool DatabaseManager::registerUser(const QString& login, const QString& passwordHash, const QString& role) {
     if (!isConnected()) {
         m_lastError = "Database not connected";
         return false;
@@ -227,8 +213,7 @@ bool DatabaseManager::registerUser(const QString& login, const QString& password
     return true;
 }
 
-QString DatabaseManager::authenticateUser(const QString& login, const QString& passwordHash)
-{
+QString DatabaseManager::authenticateUser(const QString& login, const QString& passwordHash) {
     if (!isConnected()) {
         m_lastError = "Database not connected";
         return QString();
@@ -255,8 +240,7 @@ QString DatabaseManager::authenticateUser(const QString& login, const QString& p
     return QString();
 }
 
-QPair<QString, int> DatabaseManager::authenticateUserWithId(const QString& login, const QString& passwordHash)
-{
+QPair<QString, int> DatabaseManager::authenticateUserWithId(const QString& login, const QString& passwordHash) {
     if (!isConnected()) {
         m_lastError = "Database not connected";
         return QPair<QString, int>(QString(), -1);
@@ -284,8 +268,7 @@ QPair<QString, int> DatabaseManager::authenticateUserWithId(const QString& login
     return QPair<QString, int>(QString(), -1);
 }
 
-QSqlTableModel* DatabaseManager::getUsersModel()
-{
+QSqlTableModel* DatabaseManager::getUsersModel() {
     if (!isConnected()) {
         m_lastError = "Database not connected";
         return nullptr;
@@ -294,20 +277,19 @@ QSqlTableModel* DatabaseManager::getUsersModel()
     QSqlTableModel* model = new QSqlTableModel(nullptr, m_database);
     model->setTable("users");
     model->setEditStrategy(QSqlTableModel::OnManualSubmit);
-    
-    // Set column headers
+
+    // Установка заголовков столбцов
     model->setHeaderData(0, Qt::Horizontal, "ID");
     model->setHeaderData(1, Qt::Horizontal, "Login");
     model->setHeaderData(2, Qt::Horizontal, "Password Hash");
     model->setHeaderData(3, Qt::Horizontal, "Role");
     model->setHeaderData(4, Qt::Horizontal, "Created At");
-    
+
     model->select();
     return model;
 }
 
-void DatabaseManager::saveProgress(int userId, int chapterId, int score, const QString &status)
-{
+void DatabaseManager::saveProgress(int userId, int chapterId, int score, const QString& status) {
     if (!isConnected()) {
         m_lastError = "Database not connected";
         qDebug() << m_lastError;
@@ -315,27 +297,27 @@ void DatabaseManager::saveProgress(int userId, int chapterId, int score, const Q
     }
 
     QSqlQuery query(m_database);
-    
-    // First, check if progress record already exists for this user and chapter
+
+    // Проверка существования записи прогресса для данного пользователя и главы
     query.prepare("SELECT id FROM student_progress WHERE user_id = ? AND chapter_id = ?");
     query.addBindValue(userId);
     query.addBindValue(chapterId);
-    
+
     if (!query.exec()) {
         m_lastError = QString("Failed to check existing progress: %1").arg(query.lastError().text());
         qDebug() << m_lastError;
         return;
     }
-    
+
     if (query.next()) {
-        // Update existing record
+        // Обновление существующей записи
         QSqlQuery updateQuery(m_database);
         updateQuery.prepare("UPDATE student_progress SET score = ?, status = ?, updated_at = CURRENT_TIMESTAMP WHERE user_id = ? AND chapter_id = ?");
         updateQuery.addBindValue(score);
         updateQuery.addBindValue(status);
         updateQuery.addBindValue(userId);
         updateQuery.addBindValue(chapterId);
-        
+
         if (!updateQuery.exec()) {
             m_lastError = QString("Failed to update progress: %1").arg(updateQuery.lastError().text());
             qDebug() << m_lastError;
@@ -343,14 +325,14 @@ void DatabaseManager::saveProgress(int userId, int chapterId, int score, const Q
             qDebug() << "Progress updated for user" << userId << "chapter" << chapterId << "status:" << status;
         }
     } else {
-        // Insert new record
+        // Вставка новой записи
         QSqlQuery insertQuery(m_database);
         insertQuery.prepare("INSERT INTO student_progress (user_id, chapter_id, score, status) VALUES (?, ?, ?, ?)");
         insertQuery.addBindValue(userId);
         insertQuery.addBindValue(chapterId);
         insertQuery.addBindValue(score);
         insertQuery.addBindValue(status);
-        
+
         if (!insertQuery.exec()) {
             m_lastError = QString("Failed to insert progress: %1").arg(insertQuery.lastError().text());
             qDebug() << m_lastError;
@@ -360,8 +342,7 @@ void DatabaseManager::saveProgress(int userId, int chapterId, int score, const Q
     }
 }
 
-QPair<int, QString> DatabaseManager::getLastProgress(int userId)
-{
+QPair<int, QString> DatabaseManager::getLastProgress(int userId) {
     if (!isConnected()) {
         m_lastError = "Database not connected";
         qDebug() << m_lastError;
@@ -371,21 +352,21 @@ QPair<int, QString> DatabaseManager::getLastProgress(int userId)
     QSqlQuery query(m_database);
     query.prepare("SELECT chapter_id, status FROM student_progress WHERE user_id = ? ORDER BY chapter_id DESC LIMIT 1");
     query.addBindValue(userId);
-    
+
     if (!query.exec()) {
         m_lastError = QString("Failed to get last progress: %1").arg(query.lastError().text());
         qDebug() << m_lastError;
         return QPair<int, QString>(-1, QString());
     }
-    
+
     if (query.next()) {
         int chapterId = query.value(0).toInt();
         QString status = query.value(1).toString();
         qDebug() << "Last progress for user" << userId << ": chapter" << chapterId << "status:" << status;
         return QPair<int, QString>(chapterId, status);
     }
-    
-    // No progress found - return chapter 0 (first chapter)
+
+    // Прогресс не найден - возврат к первой главе
     qDebug() << "No progress found for user" << userId << ", starting from chapter 0";
     return QPair<int, QString>(0, QString("new"));
 }

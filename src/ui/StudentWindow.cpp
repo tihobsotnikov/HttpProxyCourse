@@ -1,6 +1,6 @@
 #include "StudentWindow.h"
 
-StudentWindow::StudentWindow(int userId, QWidget *parent)
+StudentWindow::StudentWindow(int userId, QWidget* parent)
     : QMainWindow(parent)
     , m_stackedWidget(nullptr)
     , m_theoryPage(nullptr)
@@ -25,25 +25,25 @@ StudentWindow::StudentWindow(int userId, QWidget *parent)
 
 StudentWindow::~StudentWindow()
 {
-    // Qt handles cleanup automatically
+    // Qt автоматически управляет очисткой памяти
 }
 
 void StudentWindow::setupUI()
 {
-    // Create main stacked widget
+    // Создание основного стекового виджета
     m_stackedWidget = new QStackedWidget(this);
     setCentralWidget(m_stackedWidget);
     
-    // Create theory page (page 0)
+    // Создание страницы теории (страница 0)
     m_theoryPage = new QWidget();
     QVBoxLayout* theoryLayout = new QVBoxLayout(m_theoryPage);
     
-    // Theory content browser
+    // Браузер содержимого теории
     m_theoryBrowser = new QTextBrowser();
     m_theoryBrowser->setReadOnly(true);
     theoryLayout->addWidget(m_theoryBrowser);
     
-    // Take test button
+    // Кнопка начала тестирования
     m_takeTestButton = new QPushButton("Пройти тест");
     m_takeTestButton->setMinimumHeight(40);
     connect(m_takeTestButton, &QPushButton::clicked, this, &StudentWindow::onTakeTestClicked);
@@ -54,9 +54,9 @@ void StudentWindow::setupUI()
     theoryButtonLayout->addStretch();
     theoryLayout->addLayout(theoryButtonLayout);
     
-    m_stackedWidget->addWidget(m_theoryPage); // Index 0
+    m_stackedWidget->addWidget(m_theoryPage); // Индекс 0
     
-    // Create test page (page 1)
+    // Создание страницы тестирования (страница 1)
     m_testPage = new QWidget();
     QVBoxLayout* testLayout = new QVBoxLayout(m_testPage);
     
@@ -89,7 +89,7 @@ void StudentWindow::setupUI()
     testButtonLayout->addStretch();
     testLayout->addLayout(testButtonLayout);
     
-    m_stackedWidget->addWidget(m_testPage); // Index 1
+    m_stackedWidget->addWidget(m_testPage); // Индекс 1
 }
 
 void StudentWindow::loadCourse()

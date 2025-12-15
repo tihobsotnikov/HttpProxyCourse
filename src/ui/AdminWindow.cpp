@@ -3,23 +3,21 @@
 #include "core/CourseManager.h"
 #include <QDateTime>
 
-AdminWindow::AdminWindow(QWidget *parent)
-    : QMainWindow(parent), m_currentChapterIndex(-1)
-{
+AdminWindow::AdminWindow(QWidget* parent)
+    : QMainWindow(parent), m_currentChapterIndex(-1) {
     setWindowTitle("Панель администратора - HTTP Proxy Course");
     setMinimumSize(900, 600);
     resize(1200, 800);
-    
+
     setupUI();
     loadCourseData();
 }
 
-void AdminWindow::setupUI()
-{
-    // Central widget with tab widget
+void AdminWindow::setupUI() {
+    // Центральный виджет с вкладками
     m_tabWidget = new QTabWidget(this);
     setCentralWidget(m_tabWidget);
-    
+
     setupStudentsTab();
     setupCourseEditorTab();
 }

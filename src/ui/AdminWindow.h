@@ -87,10 +87,10 @@ private:
      */
     void updateChapterContent();
     
-    // Main widgets
+    // Основные виджеты
     QTabWidget* m_tabWidget;
     
-    // Students tab widgets
+    // Виджеты вкладки студентов
     QWidget* m_studentsTab;
     QTableView* m_studentsTableView;
     QLineEdit* m_searchLineEdit;
@@ -98,14 +98,14 @@ private:
     QSqlTableModel* m_usersModel;
     QSortFilterProxyModel* m_proxyModel;
     
-    // Course editor tab widgets
+    // Виджеты вкладки редактора курса
     QWidget* m_courseEditorTab;
     QListWidget* m_chaptersListWidget;
     QLineEdit* m_chapterTitleEdit;
     QTextEdit* m_chapterContentEdit;
     QPushButton* m_saveChangesButton;
     
-    // Course data
+    // Данные курса
     Course m_course;
     int m_currentChapterIndex;
 };

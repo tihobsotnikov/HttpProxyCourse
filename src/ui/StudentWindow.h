@@ -32,7 +32,7 @@ public:
      * @param userId ID студента в базе данных
      * @param parent Родительский виджет
      */
-    explicit StudentWindow(int userId, QWidget *parent = nullptr);
+    explicit StudentWindow(int userId, QWidget* parent = nullptr);
     
     /**
      * @brief Деструктор окна студента.
@@ -97,22 +97,22 @@ private:
      */
     void moveToNextChapter();
     
-    // UI Components
+    // Компоненты интерфейса
     QStackedWidget* m_stackedWidget;
     
-    // Theory page (page 0)
+    // Страница теории (страница 0)
     QWidget* m_theoryPage;
     QTextBrowser* m_theoryBrowser;
     QPushButton* m_takeTestButton;
     
-    // Test page (page 1)
+    // Страница тестирования (страница 1)
     QWidget* m_testPage;
     QLabel* m_questionLabel;
     QButtonGroup* m_answerGroup;
     QList<QRadioButton*> m_answerButtons;
     QPushButton* m_answerButton;
     
-    // State variables
+    // Переменные состояния
     int m_userId;
     int m_currentChapterIndex;
     int m_currentQuestionIndex;
