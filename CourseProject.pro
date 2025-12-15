@@ -11,13 +11,17 @@ SOURCES += \
     src/main.cpp \
     src/db/DatabaseManager.cpp \
     src/core/CryptoUtils.cpp \
-    src/core/CourseManager.cpp
+    src/core/CourseManager.cpp \
+    src/ui/LoginDialog.cpp \
+    src/ui/AdminWindow.cpp
 
 HEADERS += \
     src/db/DatabaseManager.h \
     src/models/Structures.h \
     src/core/CryptoUtils.h \
-    src/core/CourseManager.h
+    src/core/CourseManager.h \
+    src/ui/LoginDialog.h \
+    src/ui/AdminWindow.h
 
 # Include paths
 INCLUDEPATH += src

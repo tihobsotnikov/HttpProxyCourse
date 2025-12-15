@@ -77,3 +77,6 @@ __pycache__/
 
 # Binary course files (encrypted data)
 data/course.bin
+
+# Application generated reports
+Report_*.txt

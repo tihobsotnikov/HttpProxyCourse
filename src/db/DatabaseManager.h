@@ -5,6 +5,7 @@
 #include <QSqlDatabase>
 #include <QSqlQuery>
 #include <QSqlError>
+#include <QSqlTableModel>
 #include <QString>
 #include <QStringList>
 #include <QDebug>
@@ -28,6 +29,11 @@ public:
     // Database operations
     bool executeQuery(const QString& query);
     QSqlQuery executeSelectQuery(const QString& query);
+    
+    // User authentication methods
+    bool registerUser(const QString& login, const QString& passwordHash, const QString& role = "student");
+    QString authenticateUser(const QString& login, const QString& passwordHash);
+    QSqlTableModel* getUsersModel();
     
     // Prevent copying
     DatabaseManager(const DatabaseManager&) = delete;
